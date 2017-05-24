@@ -28,24 +28,40 @@ prompt.start();
 
 prompt.get(['apiRoot', 'issueTypes'], (err, result) => {
 	// get all issuesTypes and save it in an object
-	// issues get returned in following JSON format
-	/**
-		{
-			"id": "/issuetypes/story",
-			"name": "story",
-			"issues": [
-				"/issues/4",
-				"/issues/5"
-			]
-		}
-	**/
-
+	
 	// since issueTypes is passed in through prompt, we must parse it to an array from a string
 	// assuming the input is always in the format [x|y|z], this will split it to an array
 	var issueTypes = result.issueTypes.substring(1, result.issueTypes.length - 1).split('|');
-	
+	var counter = issueTypes.length;
+	// counter used to wait for last API call to respond before processing next part of data
+	// not my ideal solution
+
+	var issues = {}
+	// object to store issuetypes API calls
+
 	for (var issueType of issueTypes) {
-		console.log(result.apiRoot + '/issuetypes/' + issueType);
+		request.get(result.apiRoot + '/issuetypes/' + issueType, (req, res) => {
+			// according to API documentation, the response should be the following JSON object
+			/**
+				{
+					"id": "/issuetypes/story",
+					"name": "story",
+					"issues": [
+						"/issues/4",
+						"/issues/5"
+					]
+				}
+			**/
+
+			issues[res.name] = res.issues;
+			counter--;
+			//decrement counter after each successful response
+
+			if (!counter) {
+				//call api requests for issues
+			}
+
+		});
 	}
 
 
