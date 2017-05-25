@@ -1,8 +1,15 @@
-var config = {
-	apiRoot: 'http://www.example.com/api/v1',
-	issueTypes: '[bug|story|task]',
-	testapiRoot: 'https://jsonplaceholder.typicode.com/',
-	testissueTypes: '[posts|photos|todos]'
+var config = {}
+
+if (process.env.NODE_ENV === 'development') {
+	config.apiRoot = 'http://www.example.com/api/v1';
+	config.issueTypes = '[bugs|stories|task]';
+} else if (process.env.NODE_ENV === 'configuration') {
+	// enter configuration information here
+	config.apiRoot = '';
+	config.issueTypes = '';
+}	else {
+	config = null;
 }
+	
 
 module.exports = config;

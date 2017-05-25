@@ -1,6 +1,7 @@
 var helpers = {};
 var request = require('request');
-
+var jsonfile = require('jsonfile');
+var path = require('path');
 
 /***
 Input: Issues String from config or prompt
@@ -26,7 +27,7 @@ helpers.sendAPIRequests = (issueTypes, apiRoot) => {
 	var issues = {};
 
 	for (var issue of issueTypes) {
-		request.get(apiRoot  + '/issuetypes/' + issue, (req, res) => {
+		request.get('apiRoot  + '/issuetypes/' + issue', (req, res) => {
 			// according to API documentation, the response should be the following JSON object
 			/**
 				{
@@ -52,6 +53,17 @@ helpers.sendAPIRequests = (issueTypes, apiRoot) => {
 
 		});
 	}
+}
+
+// used for testing wtih sample json files that were given
+helpers.sendSampleAPIRequests = (issueTypes, apiRoot) => {
+	for (var issue of issueTypes) {
+		var file = path.join(__dirname, '..', 'samples', issue + '.json');
+		jsonfile.readFile(file, function(err, obj) {
+			console.log(obj)
+		});	
+	}
+
 }
 
 module.exports = helpers;

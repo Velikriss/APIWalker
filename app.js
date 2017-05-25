@@ -4,7 +4,6 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var request = require('request');
 var prompt = require('prompt');
 
 var app = express();
@@ -28,9 +27,13 @@ app.use(function(req, res, next) {
   next(err);
 });
 if (config) {
-	var issueTypes = helpers.parseIssues(config.testissueTypes);
-	helpers.sendAPIRequests(issueTypes, config.testapiRoot);
-
+	var issueTypes = helpers.parseIssues(config.issueTypes);
+	
+	if (process.env.NODE_ENV === 'development') {
+		helpers.sendSampleAPIRequests(issueTypes, config.apiRoot);
+	} else {
+		helpers.sendAPIRequests(issueTypes, config.apiRoot);
+	}
 } else {
 	prompt.start();
 
