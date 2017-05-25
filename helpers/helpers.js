@@ -24,9 +24,8 @@ helpers.sendAPIRequests = (issueTypes, apiRoot) => {
 	// not my ideal solution
 	var counter = issueTypes.length;
 	var issues = {};
-
 	for (var issue of issueTypes) {
-		request.get('apiRoot  + '/issuetypes/' + issue', (req, res) => {
+		request.get(apiRoot  +'/issuetypes/' + issue, (req, res) => {
 			// according to API documentation, the response should be the following JSON object
 			/**
 				{
@@ -40,14 +39,12 @@ helpers.sendAPIRequests = (issueTypes, apiRoot) => {
 			**/
 
 			var response = JSON.parse(res.body);
-			issues[response[0].title] = response[0].id;
+			issues[response.name] = response.issues;
 			counter--;
 			// decrement counter after each successful response
-
 			if (!counter) {
 				//call api requests for issues
-				console.log(issues);
-				console.log('All calls have been made');
+				cb(issues);
 			}
 
 		});
@@ -55,7 +52,6 @@ helpers.sendAPIRequests = (issueTypes, apiRoot) => {
 };
 
 // used for testing wtih sample json files that were provided
-
 helpers.sendSampleAPIRequests = (issueTypes, apiRoot, cb) => {
 	var counter = issueTypes.length;
 	var issues = {};
@@ -71,7 +67,7 @@ helpers.sendSampleAPIRequests = (issueTypes, apiRoot, cb) => {
 					cb(issues);
 				}
 			} else {
-				console.log('Please refer to the following error message \n', err);
+				console.log('Please refer to the following error message: \n', err);
 			}
 
 		});	
@@ -82,15 +78,47 @@ helpers.sendSampleAPIRequests = (issueTypes, apiRoot, cb) => {
 Input: Issues object with array of issues
 Output: Object that has name of issue as key and estimated completion time
 ***/
-helpers.sumAllEstimates = issueObj => {
+helpers.sumAllEstimates = (issueObj, apiRoot) => {
 	// iterate over all object keys (issue types)
 	for (var issue in issueObj) {
 		var curIssue = issueObj[issue];
 		var counter = curIssue.length;
-		estimateIssue(issue, curIssue, counter);
+		if (process.env.NODE_ENV === 'development') {
+			estimateSampleIssueAndOutput(issue, curIssue, counter);
+		} else {
+			//send API requests
+			estimateIssueandOutput(issue, curIssue, counter);
+		}
 	}
 
 	function estimateIssueAndOutput(issueName, currentIssue, counter) {
+		var sum = 0;
+		for (var singleIssue of currentIssue) {
+			request.get(apiRoot  +'/issuetypes/' + issue, (req, res) => {
+				// according to API documentation, the response should be the following JSON object
+				/**
+				{
+					"id": "/issues/1",
+					"issuetype": "/issuetypes/bug",
+					"description": "Issue #1",
+					"estimate": "3"
+				}
+				**/
+
+				var response = JSON.parse(res.body);
+				issues[response.name] = response.issues;
+				sum += parseInt(response.estimate);
+				counter--;
+
+				if (!counter) {
+					//call api requests for issues
+					console.log(issueName + ':', sum);
+				}	
+			});
+		}
+	} // end of estimateIssueAndOutput function
+
+	function estimateSampleIssueAndOutput(issueName, currentIssue, counter) {
 		var sum = 0;
 		for (var singleIssue of currentIssue) {
 			// because of how provided samples are named, parse the rootAPI paths accordingly
@@ -107,11 +135,10 @@ helpers.sumAllEstimates = issueObj => {
 					} else {
 						console.log('Please refer to the following error message \n', err);
 					}
-
 				});	
 
 		}
-	}
+	} // end of estimateSampleIssueAndOutput function
 };
 
 module.exports = helpers;

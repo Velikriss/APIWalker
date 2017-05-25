@@ -26,27 +26,32 @@ app.use(function(req, res, next) {
   err.status = 404;
   next(err);
 });
+
+// the config file only exists if the node_env is development or configuration
 if (config) {
 	var issueTypes = helpers.parseIssues(config.issueTypes);
 	
 	if (process.env.NODE_ENV === 'development') {
 		var issues = helpers.sendSampleAPIRequests(issueTypes, config.apiRoot, issuesObj => {
 			// takes issues array and retrieves all issues
-			console.log(issuesObj);
-			helpers.sumAllEstimates(issuesObj);
+			helpers.sumAllEstimates(issuesObj, config.apiRoot);
 		});
 	} else {
-		helpers.sendAPIRequests(issueTypes, config.apiRoot);
+		helpers.sendAPIRequests(issueTypes, config.apiRoot, issuesObj => {
+			// takes issues array and retrieves all issues
+			helpers.sumAllEstimates(issuesObj, config.apiRoot);
+		});
 	}
 } else {
+	// otherwise start the prompt so that the user may enter arguments through the cmd line
 	prompt.start();
-
 	prompt.get(['apiRoot', 'issueTypes'], (err, result) => {
 		// get all issueTypes and save it in an object
 		var issueTypes = helpers.parseIssues(result.issueTypes);
-		helpers.sendAPIRequests(issueTypes, result.apiRoot);
-
-
+		helpers.sendAPIRequests(issueTypes, result.apiRoot, issuesObj => {
+			// takes issues array and retrieves all issues
+			helpers.sumAllEstimates(issuesObj, config.apiRoot);
+		});
 	});
 	
 }
