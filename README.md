@@ -15,9 +15,9 @@ From the root directory:
   This will run app with parameters in helpers/config.js
   * __$ node app.js OR npm start__
   This will run app where the user is prompted for input that must follow the format--
-  -http://www.example.com/api/v1
-  -[issue1|issue2|issue3]
+  ##### http://www.example.com/api/v1
+  ##### [issue1|issue2|issue3]
 
-##TODO
+## TODO
 1. Add input validation to prompt arguments
 2. Create mock server to validate API calls
