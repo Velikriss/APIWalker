@@ -13,11 +13,10 @@ assuming the input is always in the format [x|y|z], this will split it to an arr
 
 helpers.parseIssues = issueTypes => {
 	return issueTypes.substring(1, issueTypes.length - 1).split('|');
-}
+};
 /***
 Input: Issues array and apiRoot to send requests
-Output: Object that has name of issue as key and issues array
-
+Output: Object that has name of issue as key and issues array handled in callback function
 ***/
 
 helpers.sendAPIRequests = (issueTypes, apiRoot) => {
@@ -53,17 +52,66 @@ helpers.sendAPIRequests = (issueTypes, apiRoot) => {
 
 		});
 	}
-}
+};
 
-// used for testing wtih sample json files that were given
-helpers.sendSampleAPIRequests = (issueTypes, apiRoot) => {
+// used for testing wtih sample json files that were provided
+
+helpers.sendSampleAPIRequests = (issueTypes, apiRoot, cb) => {
+	var counter = issueTypes.length;
+	var issues = {};
+
 	for (var issue of issueTypes) {
 		var file = path.join(__dirname, '..', 'samples', issue + '.json');
 		jsonfile.readFile(file, function(err, obj) {
-			console.log(obj)
+			counter--;
+			if (!err) {
+				issues[obj.name] = obj.issues;
+				if (!counter) {
+					//call api requests for issues
+					cb(issues);
+				}
+			} else {
+				console.log('Please refer to the following error message \n', err);
+			}
+
 		});	
 	}
+};
 
-}
+/***
+Input: Issues object with array of issues
+Output: Object that has name of issue as key and estimated completion time
+***/
+helpers.sumAllEstimates = issueObj => {
+	// iterate over all object keys (issue types)
+	for (var issue in issueObj) {
+		var curIssue = issueObj[issue];
+		var counter = curIssue.length;
+		estimateIssue(issue, curIssue, counter);
+	}
+
+	function estimateIssueAndOutput(issueName, currentIssue, counter) {
+		var sum = 0;
+		for (var singleIssue of currentIssue) {
+			// because of how provided samples are named, parse the rootAPI paths accordingly
+			var parsedIssue = singleIssue.substring(1).replace('s/', '-');
+			var file = path.join(__dirname, '..', 'samples', parsedIssue + '.json');
+				jsonfile.readFile(file, function(err, obj) {
+					counter--;
+					if (!err) {
+						sum += parseInt(obj.estimate);
+						if (!counter) {
+							//call api requests for issues
+							console.log(issueName + ':', sum);
+						}
+					} else {
+						console.log('Please refer to the following error message \n', err);
+					}
+
+				});	
+
+		}
+	}
+};
 
 module.exports = helpers;

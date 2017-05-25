@@ -30,7 +30,11 @@ if (config) {
 	var issueTypes = helpers.parseIssues(config.issueTypes);
 	
 	if (process.env.NODE_ENV === 'development') {
-		helpers.sendSampleAPIRequests(issueTypes, config.apiRoot);
+		var issues = helpers.sendSampleAPIRequests(issueTypes, config.apiRoot, issuesObj => {
+			// takes issues array and retrieves all issues
+			console.log(issuesObj);
+			helpers.sumAllEstimates(issuesObj);
+		});
 	} else {
 		helpers.sendAPIRequests(issueTypes, config.apiRoot);
 	}
